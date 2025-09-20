@@ -64,6 +64,8 @@ app.post('/send-email', async (req, res) => {
   const sessionToken = process.env.API_TOKEN;
   const token = req.headers['mail_server_token'];
 
+  console.log('Request Body:', req.headers);
+
   console.log(token, sessionToken);
   if (token !== sessionToken) {
 	return res.status(403).send('Forbidden: Invalid token');
