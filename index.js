@@ -60,11 +60,9 @@ const validateEmail = (email) => {
 }
 
 app.post('/send-email', async (req, res) => {
-  const { email, subject, template, from } = req.body;
+  const { email, subject, template, from, token } = req.body;
   const sessionToken = process.env.API_TOKEN;
-  const token = req.headers['mail_server_token'];
 
-  console.log('Request Body:', req.headers);
 
   console.log(token, sessionToken);
   if (token !== sessionToken) {
