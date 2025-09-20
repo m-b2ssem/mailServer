@@ -33,6 +33,8 @@ app.use(session({
 app.use(bodyParser.urlencoded({limit: '10mb',extended: true }));
 app.use(express.static(path.join(__dirname, 'public')));
 
+app.use(express.json({ limit: '10mb' }));
+
 const password = process.env.EMAIL_PASSWORD;
 const user = process.env.EMAIL_USER;
 const host = process.env.EMAIL_HOST;
@@ -52,19 +54,39 @@ const mailTransport = nodemailer.createTransport({
   },
 });
 
-app.post('/send-email', async (req, res) => {
-  const { to, subject, text, token } = req.body;
-  const sessionToken = process.env.API_TOKEN;
+const validateEmail = (email) => {
+  const re = /^(([^<>()[\]\\.,;:\s@"]+(\.[^<>()[\]\\.,;:\s@"]+)*)|(".+"))@((\[[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\])|(([a-zA-Z\-0-9]+\.)+[a-zA-Z]{2,}))$/;
+  return re.test(String(email).toLowerCase());
+}
 
+app.post('/send-email', async (req, res) => {
+  const { email, subject, template, from } = req.body;
+  const sessionToken = process.env.API_TOKEN;
+  const token = req.headers['mail_server_token'];
+
+  console.log(token, sessionToken);
   if (token !== sessionToken) {
 	return res.status(403).send('Forbidden: Invalid token');
   }
+
+  if (!email || !subject || !template) {
+	return res.status(400).send('Bad Request: Missing required fields');
+  }
+
+  if (!email.trim() || !subject.trim() || !template.trim()) {
+	return res.status(400).send('Bad Request: Fields cannot be empty');
+  }
+
+  if (!validateEmail(email)) {
+	return res.status(400).send('Bad Request: Invalid email format');
+  }
+
   try {
 	await mailTransport.sendMail({
-	  from: user,
-	  to,
+	  from: `${from} <${user}>`,
+	  to: email,
 	  subject,
-	  text
+	  text: template
 	});
 	res.status(200).send('Email sent successfully');
   } catch (error) {
