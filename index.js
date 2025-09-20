@@ -71,7 +71,7 @@ app.post('/send-email', async (req, res) => {
 	return res.status(400).send('Bad Request: Missing required fields');
   }
 
-  if (!email.trim() || !subject.trim() || !template.trim()) {
+  if (!email.trim() || !subject.trim()) {
 	return res.status(400).send('Bad Request: Fields cannot be empty');
   }
 
