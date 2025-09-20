@@ -84,7 +84,7 @@ app.post('/send-email', async (req, res) => {
 	  from: `${from} <${user}>`,
 	  to: email,
 	  subject,
-	  text: template
+	  html: template
 	});
 	res.status(200).send('Email sent successfully');
   } catch (error) {
